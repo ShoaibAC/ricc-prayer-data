@@ -1,8 +1,8 @@
-name: Update Prayer Times
+name: Prayer Times API Updater
 
 on:
   schedule:
-    - cron: '0 5 * * 0'
+    - cron: '0 5 * * 0'  # Weekly update
   workflow_dispatch:
 
 jobs:
@@ -13,29 +13,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Run script (with debug)
-        run: |
-          mkdir -p docs
-          python fetch_and_format_prayer_times.py || exit 1  # Fail if script errors
-          ls -R  # Show generated files
-
-      - name: Commit changes
-        if: success()
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/prayer_times.json
-          git commit -m "🔄 Auto-update prayer times" || echo "No changes"
-          git push
-
           
+      - name: Update data
+        run: |
+          pip install requests
+          python fetch_and_format_prayer_times.py
+          
+      - name: Push changes
+        run: |
+          git config --global user.name "iOS-App-Updater"
+          git config --global user.email "actions@users.noreply.github.com"
+          git add docs/prayer_times.json
+          git commit -m "📅 Auto-update prayer data"
+          git push
