@@ -8,56 +8,45 @@ API_URL = f"https://masjidal.com/api/v1/time/range?masjid_id={MASJID_ID}&from_da
 
 def load_and_format_prayer_times():
     try:
-        print("🔄 Fetching data from Masjidal API...")
-        response = requests.get(API_URL)
+        print("🔄 Fetching prayer times from Masjidal API...")
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(API_URL, headers=headers, timeout=10)
         response.raise_for_status()
         
-        # Debug print
-        print("Raw response:", response.text[:500])  # Show first 500 chars of response
-        
-        try:
-            data = response.json()
-        except Exception as e:
-            print("❌ Response was not valid JSON! Here is what we got:")
-            print(response.text)
-            raise
+        data = response.json()
+        if not isinstance(data.get("data"), list):
+            raise ValueError("API returned unexpected data format")
 
-        # Debug what kind of data we get
-        print("Raw API response snippet:", response.text[:300])
-        
-        days = data.get("data", [])
         formatted_output = []
-
-        for day in days:
+        for day in data["data"]:
             formatted_day = {
-                "date": day.get("date", ""),
-                "hijri_date": f"{day.get('hijri', {}).get('day_ar', '')}, {day.get('hijri', {}).get('year_ar', '')}",
-                "hijri_month": day.get("hijri", {}).get("month_en", ""),
-                "day": day.get("day", ""),
-                "fajr": day.get("prayer_times", {}).get("fajr", ""),
-                "fajr_iqama": day.get("iqama_times", {}).get("fajr", ""),
-                "sunrise": day.get("prayer_times", {}).get("sunrise", ""),
-                "dhuhr": day.get("prayer_times", {}).get("dhuhr", ""),
-                "dhuhr_iqama": day.get("iqama_times", {}).get("dhuhr", ""),
-                "asr": day.get("prayer_times", {}).get("asr", ""),
-                "asr_iqama": day.get("iqama_times", {}).get("asr", ""),
-                "maghrib": day.get("prayer_times", {}).get("maghrib", ""),
-                "maghrib_iqama": day.get("iqama_times", {}).get("maghrib", ""),
-                "isha": day.get("prayer_times", {}).get("isha", ""),
-                "isha_iqama": day.get("iqama_times", {}).get("isha", "")
+                "date": day["date"],
+                "hijri_date": f"{day['hijri']['day_ar']}, {day['hijri']['year_ar']}",
+                "hijri_month": day["hijri"]["month_en"],
+                "day": day["day"],
+                "fajr": day["prayer_times"]["fajr"],
+                "fajr_iqama": day["iqama_times"]["fajr"],
+                "sunrise": day["prayer_times"]["sunrise"],
+                "dhuhr": day["prayer_times"]["dhuhr"],
+                "dhuhr_iqama": day["iqama_times"]["dhuhr"],
+                "asr": day["prayer_times"]["asr"],
+                "asr_iqama": day["iqama_times"]["asr"],
+                "maghrib": day["prayer_times"]["maghrib"],
+                "maghrib_iqama": day["iqama_times"]["maghrib"],
+                "isha": day["prayer_times"]["isha"],
+                "isha_iqama": day["iqama_times"]["isha"]
             }
             formatted_output.append(formatted_day)
 
-        # Write to file
-        with open("prayer_times.json", "w", encoding="utf-8") as f:
+        with open("docs/prayer_times.json", "w", encoding="utf-8") as f:
             json.dump(formatted_output, f, indent=2, ensure_ascii=False)
 
-        print("✅ Successfully updated prayer_times.json.")
+        print("✅ Successfully updated prayer_times.json")
+        return True
 
-    except requests.HTTPError as http_err:
-        print(f"❌ HTTP error occurred: {http_err}; API response: {response.text}")
-    except Exception as err:
-        print(f"❌ Unexpected error: {err}")
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
 
 if __name__ == "__main__":
     load_and_format_prayer_times()
