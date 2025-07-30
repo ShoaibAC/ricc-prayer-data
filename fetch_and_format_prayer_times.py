@@ -8,30 +8,23 @@ API_URL = f"https://masjidal.com/api/v1/time/range?masjid_id={MASJID_ID}&from_da
 
 def load_and_format_prayer_times():
     try:
-    print("🔄 Fetching data from Masjidal API...")
-response = requests.get(API_URL)
-response.raise_for_status()
-print("Raw response:", response.text[:500])  # <--- Add this
-try:
-    data = response.json()
-except Exception as e:
-    print("❌ Response was not valid JSON! Here is what we got:")
-    print(response.text)
-    raise
-try:
-    data = response.json()
-except Exception as e:
-    print("❌ Response was not valid JSON! Here is what we got:")
-    print(response.text)
-    raise
-        # Debug what kind of data we get
-        print("Raw API response snippet:", response.text[:300])
+        print("🔄 Fetching data from Masjidal API...")
+        response = requests.get(API_URL)
+        response.raise_for_status()
+        
+        # Debug print
+        print("Raw response:", response.text[:500])  # Show first 500 chars of response
+        
         try:
             data = response.json()
         except Exception as e:
-            print("❌ Response was not valid JSON:", response.text)
+            print("❌ Response was not valid JSON! Here is what we got:")
+            print(response.text)
             raise
 
+        # Debug what kind of data we get
+        print("Raw API response snippet:", response.text[:300])
+        
         days = data.get("data", [])
         formatted_output = []
 
@@ -68,4 +61,3 @@ except Exception as e:
 
 if __name__ == "__main__":
     load_and_format_prayer_times()
-
