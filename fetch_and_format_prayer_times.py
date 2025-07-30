@@ -2,11 +2,8 @@ import requests
 import json
 from datetime import datetime
 
-# Constants
-MASJID_ID = "keLQn7AM"  # RICC masjid ID from masjidal.com
+MASJID_ID = "keLQn7AM"
 YEAR = datetime.now().year
-
-# Build the API URL to fetch a full year's worth of data
 API_URL = f"https://masjidal.com/api/v1/time/range?masjid_id={MASJID_ID}&from_date={YEAR}-01-01&to_date={YEAR}-12-31"
 
 def load_and_format_prayer_times():
@@ -14,9 +11,15 @@ def load_and_format_prayer_times():
         print("🔄 Fetching data from Masjidal API...")
         response = requests.get(API_URL)
         response.raise_for_status()
-        data = response.json()
-        days = data.get("data", [])
+        # Debug what kind of data we get
+        print("Raw API response snippet:", response.text[:300])
+        try:
+            data = response.json()
+        except Exception as e:
+            print("❌ Response was not valid JSON:", response.text)
+            raise
 
+        days = data.get("data", [])
         formatted_output = []
 
         for day in days:
@@ -44,11 +47,12 @@ def load_and_format_prayer_times():
             json.dump(formatted_output, f, indent=2, ensure_ascii=False)
 
         print("✅ Successfully updated prayer_times.json.")
-    
+
     except requests.HTTPError as http_err:
-        print(f"❌ HTTP error occurred: {http_err}")
+        print(f"❌ HTTP error occurred: {http_err}; API response: {response.text}")
     except Exception as err:
         print(f"❌ Unexpected error: {err}")
 
 if __name__ == "__main__":
     load_and_format_prayer_times()
+
