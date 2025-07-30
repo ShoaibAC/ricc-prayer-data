@@ -1,0 +1,33 @@
+name: Update Weekly Prayer Times
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'  # Runs every Sunday at 5 AM UTC
+  workflow_dispatch:     # Allows manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install requests dependency
+        run: pip install requests
+
+      - name: Run update script
+        run: python fetch_and_format_prayer_times.py
+
+      - name: Commit and push updated JSON
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add prayer_times.json
+          git commit -m "🔄 Auto-update prayer_times.json"
+          git push
